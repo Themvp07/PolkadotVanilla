@@ -62,7 +62,7 @@
     <p id="block-number">Bloque actual: N/A</p>
 
     <h2>Pago rápido</h2>
-    <button onclick="payOnePas()">Pagar 1 PAS</button>
+    <button onclick="payOnePas()">Pagar 20 PAS</button>
     <p id="pay-result"></p>
 
     <script>
@@ -235,7 +235,7 @@
             // cantidad de tokens a enviar
             const amount = 20;
 
-            console.log(`Iniciando pago de 1 PAS a ${recipient} desde ${selectedAccount}`);
+            console.log(`Iniciando pago de 20 PAS a ${recipient} desde ${selectedAccount}`);
 
             try {
                 const amountPlancks = BigInt(Math.floor(amount * 10 ** 9));
