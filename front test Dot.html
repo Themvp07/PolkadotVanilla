@@ -61,18 +61,8 @@
     <p id="balance">N/A</p>
     <p id="block-number">Bloque actual: N/A</p>
 
-    <h2>Cargar metadata del contrato</h2>
-    <div id="file-dropzone">Arrastra y suelta aquí el archivo .contract o haz clic para seleccionar</div>
-    <input type="file" id="file-input" accept=".contract" style="display:none" />
-    <p id="metadata-filename">Ningún archivo cargado</p>
-    <button id="load-metadata-btn" onclick="loadContractMetadata()" disabled>Cargar Metadata</button>
-
-    <h2>Leer valor del contrato</h2>
-    <button id="read-contract-btn" onclick="readContractValue()" disabled>Leer valor</button>
-    <p id="contract-value">Valor: N/A</p>
-
     <h2>Pago rápido</h2>
-    <button onclick="payOnePas()">Pagar 1 PAS</button>
+    <button onclick="payOnePas()">Pagar 20 PAS</button>
     <p id="pay-result"></p>
 
     <script>
@@ -89,60 +79,6 @@
         const metadataFilename = document.getElementById('metadata-filename');
         const loadMetadataBtn = document.getElementById('load-metadata-btn');
         const readContractBtn = document.getElementById('read-contract-btn');
-
-        // Manejar eventos drag and drop
-        dropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzone.classList.add('dragover');
-        });
-
-        dropzone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('dragover');
-        });
-
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
-
-        // Abrir selector de archivos al hacer clic en dropzone
-        dropzone.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        // Manejar selección de archivo desde input
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                handleFile(fileInput.files[0]);
-            }
-        });
-
-        // Función para manejar archivo cargado
-        function handleFile(file) {
-            if (!file.name.endsWith('.contract')) {
-                alert('Por favor, selecciona un archivo con extensión .contract');
-                return;
-            }
-            metadataFilename.textContent = `Archivo cargado: ${file.name}`;
-            loadMetadataBtn.disabled = false;
-            loadedMetadata = null;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    loadedMetadata = JSON.parse(event.target.result);
-                } catch (error) {
-                    alert('Error al parsear el archivo .contract. Asegúrate que sea un JSON válido.');
-                    loadedMetadata = null;
-                    loadMetadataBtn.disabled = true;
-                    metadataFilename.textContent = 'Ningún archivo cargado';
-                }
-            };
-            reader.readAsText(file);
-        }
 
         // Función para conectar la wallet y la API
         async function connectWallet() {
@@ -283,69 +219,6 @@
             });
         }
 
-        // Función para cargar la metadata del contrato desde el archivo cargado
-        function loadContractMetadata() {
-            if (!loadedMetadata) {
-                alert("Por favor, carga un archivo .contract válido primero.");
-                return;
-            }
-
-            try {
-                console.log("Intentando crear instancia del contrato con la metadata para solo lectura:", loadedMetadata);
-                if (!api || !api.isReady) {
-                    console.error("La API no está lista. Estado:", api ? api.isReady : "API no inicializada");
-                    alert("La API no está lista. Por favor, conecta la wallet y espera a que la API esté lista.");
-                    return;
-                }
-                if (!loadedMetadata.source || !loadedMetadata.contract) {
-                    console.error("Metadata inválida o estructura inesperada:", loadedMetadata);
-                    alert("La metadata del contrato parece inválida o incompleta.");
-                    return;
-                }
-
-                // Crear instancia del contrato para solo consultas (no usar funciones de despliegue)
-                contract = new ContractPromise(api, loadedMetadata, contractAddress);
-                readContractBtn.disabled = false;
-                alert("Metadata cargada y contrato listo para consultas.");
-            } catch (error) {
-                alert("Error creando instancia del contrato para consultas. Revisa la consola para más detalles.");
-                console.error("Error creando instancia del contrato:", error);
-                console.log("Metadata cargada:", loadedMetadata);
-                console.log("API estado:", api ? (api.isReady ? "Listo" : "No listo") : "No inicializado");
-                console.log("Dirección contrato:", contractAddress);
-            }
-        }
-
-
-        // Función para leer el valor del contrato llamando a la función "get"
-        async function readContractValue() {
-            if (!contract || !selectedAccount) {
-                alert("Por favor, conecta la wallet, selecciona una cuenta y carga la metadata primero.");
-                return;
-            }
-
-            const gasLimit = 3000n * 1000000n; // Gas máximo para la llamada
-
-            try {
-                // Realizar solo consulta de lectura (dry run) sin storageDepositLimit
-                const { gasRequired, result, output } = await contract.query.get(
-                    selectedAccount,
-                    { gasLimit }
-                );
-
-                if (result.isOk) {
-                    document.getElementById("contract-value").innerText = `Valor: ${output.toHuman()}`;
-                    console.log("Lectura exitosa:", output.toHuman());
-                } else {
-                    document.getElementById("contract-value").innerText = "Error en la lectura del contrato";
-                    console.error("Error en la lectura del contrato:", result.asErr);
-                }
-            } catch (error) {
-                document.getElementById("contract-value").innerText = "Error ejecutando la consulta";
-                console.error("Error ejecutando la consulta:", error);
-            }
-        }
-
         // Función para realizar un pago rápido de 1 PAS
         async function payOnePas() {
             if (!api) {
@@ -357,8 +230,10 @@
                 return;
             }
 
+            // direccion a donde se envian los token
             const recipient = "13uHe9HLv3MAahwFhyepq4yNKysonAzePFLUhgvZNPZp4N5b";
-            const amount = 1;
+            // cantidad de tokens a enviar
+            const amount = 20;
 
             console.log(`Iniciando pago de 1 PAS a ${recipient} desde ${selectedAccount}`);
 
